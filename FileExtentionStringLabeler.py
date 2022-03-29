@@ -14,10 +14,12 @@
 # 
 #   - Strings such as ".comment" or similar might be included in labeling
 #   - To correct for this behavior you can manually review changed labels or simply update them as you see them
+#
 
 from ghidra.program.util import DefinedDataIterator
 from ghidra.program.model.symbol import SourceType
 from ghidra.program.database.symbol import SymbolManager
+import re
 
 
 file_extensions = [ ".xml", ".htm", ".doc", ".jp", ".png", ".gif", ".js",
@@ -34,16 +36,18 @@ for string in DefinedDataIterator.definedStrings(currentProgram):
             address = string.getAddress()
             prime = string.getPrimarySymbol()
 
+            cleaned_string = re.sub(r'[^\x20-\x7e]',r'', str(name))
+
             if prime is not None:
                 
                 # Get Primary label of the string, and change the label to the value of the string 
-                prime.setName(str(name), SourceType.USER_DEFINED)
+                prime.setName(cleaned_string, SourceType.USER_DEFINED)
                 
                 # Debug
-                print "Changed Label:", address, name
+                print "Changed Label:", address, cleaned_string
             
             else:
                 
                 # If there is no label, create one
-                createLabel(address, name, True)
-                print "Create New Label:", address, name
+                createLabel(address, cleaned_string, True)
+                print "Create New Label:", address, cleaned_string
